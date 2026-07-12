@@ -5,13 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.j-util</groupId>
-    <artifactId>streaming-http</artifactId>
+    <artifactId>inputstream-processor</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>streaming-http</name>
+    <name>inputstream-processor</name>
     <description>A Java HTTP client library for incrementally processing response bodies without buffering the entire payload.</description>
-    <url>https://github.com/j-util/streaming-http</url>
+    <url>https://github.com/j-util/inputstream-processor</url>
 
     <licenses>
         <license>
@@ -29,9 +29,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:https://github.com/j-util/streaming-http.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/j-util/streaming-http.git</developerConnection>
-        <url>https://github.com/j-util/streaming-http</url>
+        <connection>scm:git:https://github.com/j-util/inputstream-processor.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/j-util/inputstream-processor.git</developerConnection>
+        <url>https://github.com/j-util/inputstream-processor</url>
         <tag>HEAD</tag>
     </scm>
 
