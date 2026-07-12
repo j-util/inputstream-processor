@@ -1,2 +1,5 @@
 # inputstream-processor
-A memory-efficient Java library for processing item-oriented InputStream content such as JSON arrays, CSV rows, XML elements, and other framed formats.
+
+A memory-efficient Java library for incrementally processing item-oriented `InputStream` content without materializing the complete input in memory.
+
+V1 focuses on JSON arrays. Additional framed formats such as CSV and XML may be added later.
