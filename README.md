@@ -1,5 +1,7 @@
 # InputStream Processor Core
 
+[![CI](https://github.com/j-util/inputstream-processor-core/actions/workflows/ci.yml/badge.svg)](https://github.com/j-util/inputstream-processor-core/actions/workflows/ci.yml)
+
 A tiny, format-neutral Java core for incremental item processing from
 `InputStream`. The core has no third-party runtime dependencies.
 

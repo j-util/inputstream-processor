@@ -10,3 +10,4 @@ All notable changes to this project will be documented in this file.
 - `InputParser<T>`, `InputStreamProcessor<T>`, and `ProcessingResult`.
 - Explicit caller ownership of input streams.
 - Synchronous parser and consumer processing contract.
+- Automated CI verification on Java 8 and the modern Java 25 JDK.
