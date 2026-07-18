@@ -9,8 +9,8 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>inputstream-processor-core</name>
-    <description>Incrementally parse and process structured InputStream content one item at a time without materializing the complete input in memory.</description>
+    <name>InputStream Processor Core</name>
+    <description>A tiny, dependency-free Java core for incremental item processing from InputStream.</description>
     <url>https://github.com/j-util/inputstream-processor-core</url>
 
     <licenses>
@@ -27,6 +27,11 @@
             <url>https://github.com/k-barseghyan</url>
         </developer>
     </developers>
+
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/j-util/inputstream-processor-core/issues</url>
+    </issueManagement>
 
     <scm>
         <connection>scm:git:https://github.com/j-util/inputstream-processor-core.git</connection>
