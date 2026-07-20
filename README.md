@@ -5,7 +5,17 @@
 A tiny, format-neutral Java core for incremental item processing from
 `InputStream`. The core has no third-party runtime dependencies.
 
-Maven coordinate: `io.github.j-util:inputstream-processor-core`
+## Requirements and installation
+
+InputStream Processor Core requires Java 8 or later.
+
+```xml
+<dependency>
+    <groupId>io.github.j-util</groupId>
+    <artifactId>inputstream-processor-core</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
 
 ## Responsibilities
 
@@ -18,11 +28,14 @@ The API separates three responsibilities:
 * A client `Consumer<? super T>` handles each item and owns the application's
   failure policy.
 
-The core does not catch or classify parser or consumer failures. If a consumer
-handles an application failure itself, processing can continue. A runtime
-exception allowed out of the consumer terminates processing. Likewise, a parser
-can handle its own recoverable failures, while an `IOException` allowed out of
-the parser terminates processing.
+Every emitted item, including `null`, is forwarded unchanged. An item is counted
+when its client consumer call returns normally, including a `null` item.
+
+The core does not catch, wrap, or classify parser or consumer exceptions; they
+propagate unchanged and terminate `process(...)`. Consumer calls completed
+before a later failure remain completed, with no rollback. When `process(...)`
+throws, no `ProcessingResult` is returned. Parsers and consumers can handle
+their own recoverable failures if processing should continue.
 
 ## Execution and concurrency
 
@@ -70,10 +83,17 @@ try (InputStream input = Files.newInputStream(path)) {
 }
 ```
 
-The caller owns the supplied `InputStream`. Neither the processor nor a parser
-implementation should close it; the caller should close it after processing, as
-shown above. In particular, the example intentionally does not close the
-`BufferedReader`, because doing so would also close the caller-owned stream.
+The caller owns the supplied `InputStream`. The processor never closes it,
+including when parsing or consumption terminates exceptionally. Parser
+implementations must also leave it open. The caller should close the stream
+after processing, as shown above. In particular, the example intentionally does
+not close the `BufferedReader`, because doing so would also close the
+caller-owned stream.
+
+The core itself does not materialize the complete input or all emitted items.
+Incremental, bounded-memory behavior depends on the parser reading and emitting
+incrementally; the core cannot prevent a parser implementation from buffering
+the complete input or all parsed items.
 
 JSON, CSV, and XML integrations are intentionally outside this dependency-free
 core. Applications can implement `InputParser<T>` using whichever format

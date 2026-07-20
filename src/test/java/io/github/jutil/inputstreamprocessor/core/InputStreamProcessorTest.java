@@ -40,6 +40,18 @@ class InputStreamProcessorTest {
     }
 
     @Test
+    void nullItemIsForwardedUnchangedAndCounted() throws IOException {
+        InputStreamProcessor<String> processor =
+                new InputStreamProcessor<>((input, emitter) -> emitter.accept(null));
+        List<String> consumed = new ArrayList<>();
+
+        ProcessingResult result = processor.process(emptyInput(), consumed::add);
+
+        assertEquals(Collections.singletonList(null), consumed);
+        assertEquals(1L, result.getProcessedCount());
+    }
+
+    @Test
     void zeroEmittedItemsProduceZeroCount() throws IOException {
         InputStreamProcessor<String> processor =
                 new InputStreamProcessor<>((input, emitter) -> {
@@ -116,6 +128,42 @@ class InputStreamProcessorTest {
     }
 
     @Test
+    void parserRuntimeExceptionPropagatesUnchanged() {
+        RuntimeException failure = new IllegalStateException("parser failed");
+        InputStreamProcessor<String> processor =
+                new InputStreamProcessor<>((input, emitter) -> {
+                    throw failure;
+                });
+
+        RuntimeException thrown = assertThrows(
+                RuntimeException.class,
+                () -> processor.process(emptyInput(), item -> {
+                })
+        );
+
+        assertSame(failure, thrown);
+    }
+
+    @Test
+    void itemEmittedBeforeParserIOExceptionRemainsConsumed() {
+        IOException failure = new IOException("parser failed");
+        InputStreamProcessor<String> processor =
+                new InputStreamProcessor<>((input, emitter) -> {
+                    emitter.accept("completed");
+                    throw failure;
+                });
+        List<String> consumed = new ArrayList<>();
+
+        IOException thrown = assertThrows(
+                IOException.class,
+                () -> processor.process(emptyInput(), consumed::add)
+        );
+
+        assertEquals(Collections.singletonList("completed"), consumed);
+        assertSame(failure, thrown);
+    }
+
+    @Test
     void processorDoesNotCloseSuppliedInputStream() throws IOException {
         CloseTrackingInputStream input =
                 new CloseTrackingInputStream("content".getBytes(StandardCharsets.UTF_8));
@@ -128,6 +176,38 @@ class InputStreamProcessorTest {
 
         processor.process(input, item -> {
         });
+
+        assertFalse(input.isClosed());
+    }
+
+    @Test
+    void processorDoesNotCloseSuppliedInputStreamWhenConsumerThrows() {
+        CloseTrackingInputStream input = new CloseTrackingInputStream(new byte[0]);
+        InputStreamProcessor<String> processor = processorEmitting("item");
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> processor.process(input, item -> {
+                    throw new IllegalStateException("consumer failed");
+                })
+        );
+
+        assertFalse(input.isClosed());
+    }
+
+    @Test
+    void processorDoesNotCloseSuppliedInputStreamWhenParserThrows() {
+        CloseTrackingInputStream input = new CloseTrackingInputStream(new byte[0]);
+        InputStreamProcessor<String> processor =
+                new InputStreamProcessor<>((stream, emitter) -> {
+                    throw new IOException("parser failed");
+                });
+
+        assertThrows(
+                IOException.class,
+                () -> processor.process(input, item -> {
+                })
+        );
 
         assertFalse(input.isClosed());
     }

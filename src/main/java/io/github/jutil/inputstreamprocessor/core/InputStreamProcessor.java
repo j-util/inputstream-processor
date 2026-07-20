@@ -14,15 +14,26 @@ import java.util.function.Consumer;
  * for processing each emitted item and deciding whether to handle its own
  * application failures. This processor only connects those responsibilities
  * and counts successful consumer calls; it does not catch or classify parser or
- * consumer failures.</p>
+ * consumer failures. Emitted values, including {@code null}, are forwarded
+ * unchanged and counted after the consumer returns normally.</p>
+ *
+ * <p>Parser and consumer exceptions propagate unchanged. Consumer calls that
+ * completed before a later failure remain completed; the processor provides no
+ * rollback. If processing throws, no {@link ProcessingResult} is returned.</p>
+ *
+ * <p>The core does not materialize the complete input or all emitted items.
+ * Incremental, bounded-memory behavior depends on the parser reading and
+ * emitting incrementally; this processor cannot prevent a parser from buffering
+ * the complete input or all parsed items.</p>
  *
  * <p>This class is immutable. Safe concurrent reuse of an instance depends on
  * the configured parser being thread-safe. Separate processing calls must use
  * separate {@link InputStream} instances. This processor does not add
  * synchronization around the parser or processing calls.</p>
  *
- * <p>This processor does not close supplied input streams; stream ownership
- * remains with the caller.</p>
+ * <p>This processor does not close supplied input streams, including when
+ * processing terminates exceptionally; stream ownership remains with the
+ * caller.</p>
  *
  * @param <T> the type of item processed
  */
@@ -44,16 +55,19 @@ public final class InputStreamProcessor<T> {
     /**
      * Parses {@code input} and passes every emitted item to {@code consumer}.
      *
-     * <p>The processed count is incremented only after a call to
-     * {@link Consumer#accept(Object)} returns normally. A runtime exception from
-     * the consumer or an {@link IOException} from the parser propagates
-     * unchanged and terminates processing. The processor does not close
-     * {@code input}, including when processing terminates exceptionally.</p>
+     * <p>Every emitted value, including {@code null}, is passed to
+     * {@code consumer} unchanged. The processed count is incremented only after
+     * a call to {@link Consumer#accept(Object)} returns normally. An exception
+     * from the parser or consumer propagates unchanged and terminates
+     * processing. Consumer calls completed before the failure remain completed;
+     * there is no rollback. When this method throws, it returns no
+     * {@link ProcessingResult}. The processor does not close {@code input},
+     * including when processing terminates exceptionally.</p>
      *
      * @param input the caller-owned input stream to process
      * @param consumer the client operation to invoke for every emitted item
      * @return an immutable result containing the number of successful consumer
-     *         calls
+     *         calls, returned only when processing completes normally
      * @throws IOException if the parser propagates an input failure
      * @throws RuntimeException if the parser or consumer propagates a runtime
      *         failure
